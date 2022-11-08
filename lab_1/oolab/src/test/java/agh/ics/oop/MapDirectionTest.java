@@ -28,6 +28,10 @@ class MapDirectionTest {
 
     @Test
     void toUnitVector() {
+        assertEquals(MapDirection.NORTH.toUnitVector(), new Vector2d(0, 1));
+        assertEquals(MapDirection.EAST.toUnitVector(), new Vector2d(1, 0));
+        assertEquals(MapDirection.SOUTH.toUnitVector(), new Vector2d(0, -1));
+        assertEquals(MapDirection.WEST.toUnitVector(), new Vector2d(-1, 0));
     }
 
     @Test
