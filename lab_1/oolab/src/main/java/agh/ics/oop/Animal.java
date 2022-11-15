@@ -4,6 +4,8 @@ public class Animal {
     private MapDirection orientation;
     private Vector2d position;
 
+    private IWorldMap map;
+
     public Animal() {
         this.orientation = MapDirection.NORTH;
         this.position = new Vector2d(2, 2);
@@ -14,26 +16,40 @@ public class Animal {
         this.position = position;
     }
 
+    public Animal(IWorldMap map){
+        this.map = map;
+    }
+
+    public Animal(IWorldMap map, Vector2d initialPosition){
+        this.map = map;
+        this.position = initialPosition;
+        this.orientation = MapDirection.NORTH;
+    }
+
     boolean isAt(Vector2d position) {
         return this.position.equals(position);
     }
 
-    void move(MoveDirection direction) {
-        final Vector2d BORDER_LOWER_LEFT = new Vector2d(0, 0);
-        final Vector2d BORDER_UPPER_RIGHT = new Vector2d(4, 4);
+    boolean checkValidMove(Vector2d newPosition){
+        Vector2d lowerBorder = new Vector2d(0,0);
+        Vector2d upperBorder = new Vector2d(4, 4);
 
+        return newPosition.precedes(upperBorder) && newPosition.follows(lowerBorder);
+    }
+
+    void move(MoveDirection direction) {
         switch (direction) {
             case RIGHT -> orientation = orientation.next();
             case LEFT -> orientation = orientation.previous();
             case FORWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).add(orientation.toUnitVector());
-                if (tmp.x >= 0 && tmp.x <= 4 && tmp.y >= 0 && tmp.y <= 4) {
+                if (map.canMoveTo(tmp)) {
                     position = tmp;
                 }
             }
             case BACKWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).subtract(orientation.toUnitVector());
-                if (tmp.x >= 0 && tmp.x <= 4 && tmp.y >= 0 && tmp.y <= 4) {
+                if (map.canMoveTo(tmp)) {
                     position = tmp;
                 }
             }
@@ -50,9 +66,11 @@ public class Animal {
 
     @Override
     public String toString() {
-        return "Animal{" +
-                "orientation=" + orientation +
-                ", position=" + position.toString() +
-                '}';
+        return switch(orientation){
+            case NORTH -> "N";
+            case EAST -> "E";
+            case WEST -> "W";
+            case SOUTH -> "S";
+        };
     }
 }

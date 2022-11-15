@@ -1,34 +1,48 @@
 package agh.ics.oop;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.util.Arrays;
 
 public class World {
     public static void main(String[] args) {
-//        System.out.println("Start");
-//        Direction[] directions = convertDirections(args);
-//        run(directions);
-//        System.out.println("Stop");
 
-//        Vector2d position1 = new Vector2d(1, 2);
-//        System.out.println(position1);
-//        Vector2d position2 = new Vector2d(-2, 1);
-//        System.out.println(position2);
-//        System.out.println(position1.add(position2));
+        final int MAP_WIDTH = 10;
+        final int MAP_HEIGHT = 5;
+        final int CELL_SIZE = 30;
 
-//        Animal animal = new Animal();
-//        System.out.println(animal);
-//        animal.move(MoveDirection.RIGHT);
-//        animal.move(MoveDirection.FORWARD);
-//        animal.move(MoveDirection.FORWARD);
-//        animal.move(MoveDirection.FORWARD);
-//        System.out.println(animal);
+        final Vector2d[] INITIAL_POSITIONS = {
+                new Vector2d(2, 2), new Vector2d(3, 4), new Vector2d(2,3),
+        };
 
-        Animal animal2 = new Animal();
-        MoveDirection[] dirs = new OptionsParser().parse(args);
-        for (MoveDirection dir : dirs) {
-            animal2.move(dir);
+        JFrame frame = getFrame(MAP_WIDTH, MAP_HEIGHT, CELL_SIZE);
+        frame.setVisible(true);
+
+        MoveDirection[] directions = new OptionsParser().parse(new String[]{"f", "f", "r", "f", "f", "b"});
+        IWorldMap map = new RectangularMap(MAP_WIDTH, MAP_HEIGHT);
+
+        IEngine engine = new SimulationEngine(directions, map, INITIAL_POSITIONS, frame);
+        engine.run();
+    }
+
+    public static JFrame getFrame(int width, int height, int cellSize){
+        JFrame frame = new JFrame();
+        frame.setSize(400,400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        DefaultTableModel model = new DefaultTableModel(height, width);
+        JTable table = new JTable(model);
+        table.setRowHeight(cellSize);
+        for (int i = 0; i < table.getColumnCount(); ++i){
+            table.getColumnModel().getColumn(i).setPreferredWidth(cellSize);
+            table.getColumnModel().getColumn(i).setMaxWidth(cellSize);
+            table.getColumnModel().getColumn(i).setMinWidth(cellSize);
         }
-        System.out.println(animal2);
+        frame.getContentPane().add(table);
+
+        return frame;
     }
 
     public static Direction[] convertDirections(String[] dirs) {
