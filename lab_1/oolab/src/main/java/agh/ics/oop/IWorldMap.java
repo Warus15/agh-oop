@@ -45,4 +45,12 @@ public interface IWorldMap {
      * @return Object or null if the position is not occupied.
      */
     Object objectAt(Vector2d position);
+
+    /**
+     * Removes element at given position
+     *
+     * @param position
+     *              Position to clear
+     */
+    void removeElementAt(Vector2d position);
 }

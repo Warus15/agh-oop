@@ -1,9 +1,7 @@
 package agh.ics.oop;
 
-public class Animal {
+public class Animal extends AbstractWorldMapElement {
     private MapDirection orientation;
-    private Vector2d position;
-
     private IWorldMap map;
 
     public Animal() {
@@ -30,13 +28,6 @@ public class Animal {
         return this.position.equals(position);
     }
 
-    boolean checkValidMove(Vector2d newPosition){
-        Vector2d lowerBorder = new Vector2d(0,0);
-        Vector2d upperBorder = new Vector2d(4, 4);
-
-        return newPosition.precedes(upperBorder) && newPosition.follows(lowerBorder);
-    }
-
     void move(MoveDirection direction) {
         switch (direction) {
             case RIGHT -> orientation = orientation.next();
@@ -44,12 +35,14 @@ public class Animal {
             case FORWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).add(orientation.toUnitVector());
                 if (map.canMoveTo(tmp)) {
+                    map.removeElementAt(tmp);
                     position = tmp;
                 }
             }
             case BACKWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).subtract(orientation.toUnitVector());
                 if (map.canMoveTo(tmp)) {
+                    map.removeElementAt(tmp);
                     position = tmp;
                 }
             }
@@ -58,10 +51,6 @@ public class Animal {
 
     public MapDirection getOrientation() {
         return orientation;
-    }
-
-    public Vector2d getPosition() {
-        return position;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package agh.ics.oop;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
@@ -51,7 +52,7 @@ class SimulationEngineTest {
 
     @Test
     void orderTest(){
-        String[] args = {"f", "b", "f"};
+        String[] args = {"f", "b", "f", "f"};
         MoveDirection[] directions = new OptionsParser().parse(args);
         IWorldMap map = new RectangularMap(MAP_WIDTH, MAP_HEIGHT);
 
@@ -64,7 +65,7 @@ class SimulationEngineTest {
         SimulationEngine engine = new SimulationEngine(directions, map, INITIAL_POSITIONS);
         engine.run();
 
-        assertEquals(engine.getAnimals().get(0).getPosition(), new Vector2d(1, 2));
+        assertEquals(engine.getAnimals().get(0).getPosition(), new Vector2d(1, 3));
         assertEquals(engine.getAnimals().get(1).getPosition(), new Vector2d(2, 0));
         assertEquals(engine.getAnimals().get(2).getPosition(), new Vector2d(3, 2));
     }
