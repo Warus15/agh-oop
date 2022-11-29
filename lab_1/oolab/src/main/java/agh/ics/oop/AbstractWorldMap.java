@@ -1,11 +1,9 @@
 package agh.ics.oop;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.util.HashMap;
 
-public abstract class AbstractWorldMap implements IWorldMap {
-
-    protected ArrayList<Animal> animals = new ArrayList<>();
+public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObserver {
+    protected HashMap<Vector2d, IMapElement> mapElements = new HashMap<>();
     protected final int WIDTH;
     protected final int HEIGHT;
 
@@ -30,6 +28,22 @@ public abstract class AbstractWorldMap implements IWorldMap {
     }
 
     @Override
+    public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+        boolean newPositionContainsGrass = isOccupied(newPosition);
+
+        if(newPositionContainsGrass){
+            return false;
+        }
+
+        Animal animal = (Animal) mapElements.get(oldPosition);
+
+        mapElements.remove(oldPosition);
+        mapElements.put(newPosition, animal);
+
+        return true;
+    }
+
+    @Override
     public boolean canMoveTo(Vector2d position) {
         boolean occupiedByAnimal = objectAt(position) instanceof Animal;
         boolean inBounds = position.follows(borderStart) && position.precedes(borderEnd);
@@ -37,14 +51,15 @@ public abstract class AbstractWorldMap implements IWorldMap {
         return inBounds && !occupiedByAnimal;
     }
 
-
     @Override
     public boolean place(Animal animal) {
         if (isOccupied(animal.getPosition())) {
             return false;
         }
 
-        animals.add(animal);
+        mapElements.put(animal.getPosition(), animal);
+        animal.addObserver(this);
+
         return true;
     }
 
@@ -55,24 +70,10 @@ public abstract class AbstractWorldMap implements IWorldMap {
 
     @Override
     public Object objectAt(Vector2d position) {
-        for (Animal animal : animals) {
-            if (animal.getPosition().equals(position)) {
-                return animal;
-            }
-        }
-
-        return null;
+        return mapElements.get(position);
     }
 
     abstract protected void calculateBorders();
-
-    public ArrayList<Animal> getAnimals() {
-        return new ArrayList<>(animals);
-    }
-
-    public void setAnimals(ArrayList<Animal> animals){
-        this.animals = new ArrayList<>(animals);
-    }
 
     @Override
     public String toString() {

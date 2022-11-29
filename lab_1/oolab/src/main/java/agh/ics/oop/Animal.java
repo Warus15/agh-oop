@@ -1,8 +1,12 @@
 package agh.ics.oop;
 
+import java.util.ArrayList;
+
 public class Animal extends AbstractWorldMapElement {
     private MapDirection orientation;
     private IWorldMap map;
+
+    private final ArrayList<IPositionChangeObserver> observers = new ArrayList<>();
 
     public Animal() {
         this.orientation = MapDirection.NORTH;
@@ -12,10 +16,6 @@ public class Animal extends AbstractWorldMapElement {
     public Animal(MapDirection orientation, Vector2d position) {
         this.orientation = orientation;
         this.position = position;
-    }
-
-    public Animal(IWorldMap map){
-        this.map = map;
     }
 
     public Animal(IWorldMap map, Vector2d initialPosition){
@@ -32,20 +32,27 @@ public class Animal extends AbstractWorldMapElement {
         switch (direction) {
             case RIGHT -> orientation = orientation.next();
             case LEFT -> orientation = orientation.previous();
-            case FORWARD -> {
+            case FORWARD, BACKWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).add(orientation.toUnitVector());
                 if (map.canMoveTo(tmp)) {
-                    map.removeElementAt(tmp);
+                    this.positionChanged(position, tmp);
                     position = tmp;
                 }
             }
-            case BACKWARD -> {
-                Vector2d tmp = new Vector2d(position.x, position.y).subtract(orientation.toUnitVector());
-                if (map.canMoveTo(tmp)) {
-                    map.removeElementAt(tmp);
-                    position = tmp;
-                }
-            }
+        }
+    }
+
+    void addObserver(IPositionChangeObserver observer){
+        observers.add(observer);
+    }
+
+    void removeObserver(IPositionChangeObserver observer){
+        observers.remove(observer);
+    }
+
+    void positionChanged(Vector2d oldPosition, Vector2d newPosition){
+        for(IPositionChangeObserver observer : observers){
+            observer.positionChanged(oldPosition, newPosition);
         }
     }
 

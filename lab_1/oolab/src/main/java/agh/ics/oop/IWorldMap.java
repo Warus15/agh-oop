@@ -52,5 +52,4 @@ public interface IWorldMap {
      * @param position
      *              Position to clear
      */
-    void removeElementAt(Vector2d position);
 }

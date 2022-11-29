@@ -1,18 +1,13 @@
 package agh.ics.oop;
 
-import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class GrassField extends AbstractWorldMap {
-    private final int amount;
-    private ArrayList<Grass> grass = new ArrayList<>();
-
     private final int GRASS_LIMIT;
 
     public GrassField(int amount) {
         super();
 
-        this.amount = amount;
         GRASS_LIMIT = (int) Math.round(Math.sqrt(10 * amount));
 
         for (int i = 0; i < amount; ++i) {
@@ -24,23 +19,13 @@ public class GrassField extends AbstractWorldMap {
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
-    private Grass getGrassAtPosition(Vector2d position) {
-        for (Grass g : grass) {
-            if (g.getPosition().equals(position)) {
-                return g;
-            }
-        }
-
-        return null;
-    }
-
     private boolean canPlaceGrass(Vector2d position) {
         return !super.isOccupied(position);
     }
 
     private Vector2d findGrassPosition(Vector2d toExclude) {
-        final int occupiedFields = animals.size() + grass.size();
-        boolean hasFiniteBorders = WIDTH != Integer.MAX_VALUE && HEIGHT != Integer.MAX_VALUE;
+        final int occupiedFields = mapElements.size();
+        final boolean hasFiniteBorders = WIDTH != Integer.MAX_VALUE && HEIGHT != Integer.MAX_VALUE;
         final int maxAmount = WIDTH * HEIGHT;
 
         if (hasFiniteBorders && (occupiedFields == maxAmount || (toExclude != null && occupiedFields == maxAmount - 1))) {
@@ -64,7 +49,7 @@ public class GrassField extends AbstractWorldMap {
             return false;
         }
 
-        grass.add(new Grass(grassPosition));
+        this.mapElements.put(grassPosition, new Grass(grassPosition));
 
         return true;
     }
@@ -76,56 +61,20 @@ public class GrassField extends AbstractWorldMap {
      *              Position at which grass should be placed
      */
     public void placeGrass(Vector2d position){
-        grass.add(new Grass(position));
+        this.mapElements.put(position, new Grass(position));
+
     }
 
     @Override
     protected void calculateBorders() {
-        if(animals.size() > 0){
-            lowerVisualizationBorder = animals.get(0).getPosition();
-            upperVisualizationBorder = animals.get(0).getPosition();
-        } else if (grass.size() > 0){
-            lowerVisualizationBorder = grass.get(0).getPosition();
-            upperVisualizationBorder = grass.get(0).getPosition();
-        } else {
-            lowerVisualizationBorder = new Vector2d(0,0);
-            upperVisualizationBorder = new Vector2d(0,0);
-        }
+        lowerVisualizationBorder = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        upperVisualizationBorder = new Vector2d(0,0);
 
-        for (Animal animal : animals) {
-            Vector2d currentPosition = animal.getPosition();
+        for(IMapElement mapElement : mapElements.values()){
+            Vector2d currentPosition = mapElement.getPosition();
 
             lowerVisualizationBorder = currentPosition.lowerLeft(lowerVisualizationBorder);
             upperVisualizationBorder = currentPosition.upperRight(upperVisualizationBorder);
-        }
-
-        for (Grass g : grass) {
-            Vector2d currentPosition = g.getPosition();
-
-            lowerVisualizationBorder = currentPosition.lowerLeft(lowerVisualizationBorder);
-            upperVisualizationBorder = currentPosition.upperRight(upperVisualizationBorder);
-        }
-    }
-
-    @Override
-    public Object objectAt(Vector2d position) {
-        Animal animal = (Animal) super.objectAt(position);
-
-        if (animal != null) {
-            return animal;
-        }
-
-
-        return getGrassAtPosition(position);
-    }
-
-    @Override
-    public void removeElementAt(Vector2d position) {
-        Object object = objectAt(position);
-
-        if (object instanceof Grass) {
-            grass.remove(object);
-            placeRandomGrass(position);
         }
     }
 
@@ -143,18 +92,26 @@ public class GrassField extends AbstractWorldMap {
             return false;
         }
 
-        animals.add(animal);
-        grass.remove(o);
+        mapElements.put(animal.getPosition(), animal);
         placeRandomGrass(animal.getPosition());
 
         return true;
     }
 
-    public ArrayList<Grass> getGrass() {
-        return new ArrayList<>(grass);
-    }
+    @Override
+    public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+        boolean wasPositionChanged = super.positionChanged(oldPosition, newPosition);
 
-    public void setGrass(ArrayList<Grass> grass){
-        this.grass = new ArrayList<>(grass);
+        if(wasPositionChanged){
+            return true;
+        }
+
+        Animal animal = (Animal) mapElements.get(oldPosition);
+
+        mapElements.put(newPosition, animal);
+        mapElements.remove(oldPosition);
+        placeRandomGrass(newPosition);
+
+        return true;
     }
 }

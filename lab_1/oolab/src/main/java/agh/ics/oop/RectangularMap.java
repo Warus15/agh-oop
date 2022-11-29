@@ -13,9 +13,4 @@ public class RectangularMap extends AbstractWorldMap{
         lowerVisualizationBorder = new Vector2d(0,0);
         upperVisualizationBorder = new Vector2d(WIDTH, HEIGHT);
     }
-
-    @Override
-    public void removeElementAt(Vector2d position) {
-
-    }
 }
