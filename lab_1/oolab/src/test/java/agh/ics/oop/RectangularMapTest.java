@@ -31,12 +31,12 @@ class RectangularMapTest {
         Animal animal = new Animal(MapDirection.NORTH, position);
 
         assertTrue(map.place(animal));
-        assertTrue(map.getAnimals().contains(animal));
+        assertTrue(map.mapElements.containsValue(animal));
 
         Animal animal2 = new Animal(MapDirection.EAST, position);
 
         assertFalse(map.place(animal2));
-        assertFalse(map.getAnimals().contains(animal2));
+        assertFalse(map.mapElements.containsValue(animal2));
 
     }
 

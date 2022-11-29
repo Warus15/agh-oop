@@ -23,7 +23,6 @@ class GrassFieldTest {
             new Vector2d(2, 3),
             new Vector2d(4, 4),
             new Vector2d(1, 2),
-            new Vector2d(5, 5),
     };
 
 
@@ -35,18 +34,15 @@ class GrassFieldTest {
 
         for (Vector2d v : animalsPositions) {
             Animal animal = new Animal(map, v);
-            animals.add(animal);
+            map.mapElements.put(v, animal);
         }
 
         grass = new ArrayList<>();
 
         for (Vector2d v : grassPositions) {
             Grass g = new Grass(v);
-            grass.add(g);
+            map.mapElements.put(v, g);
         }
-
-        map.setAnimals(animals);
-        map.setGrass(grass);
     }
 
     @Test
