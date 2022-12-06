@@ -10,6 +10,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     protected final Vector2d borderStart = new Vector2d(0, 0);
     protected final Vector2d borderEnd;
 
+    protected final MapBoundary mapBoundary;
+
     protected Vector2d lowerVisualizationBorder;
     protected Vector2d upperVisualizationBorder;
 
@@ -19,12 +21,16 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
         WIDTH = Integer.MAX_VALUE;
         HEIGHT = Integer.MAX_VALUE;
         borderEnd = new Vector2d(WIDTH, HEIGHT);
+
+        mapBoundary = new MapBoundary();
     }
 
     public AbstractWorldMap(int width, int height) {
         WIDTH = width;
         HEIGHT = height;
         borderEnd = new Vector2d(WIDTH, HEIGHT);
+
+        mapBoundary = new MapBoundary();
     }
 
     @Override
@@ -52,13 +58,16 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     }
 
     @Override
-    public boolean place(Animal animal) {
+    public boolean place(Animal animal) throws IllegalArgumentException {
         if (isOccupied(animal.getPosition())) {
-            return false;
+            throw new IllegalArgumentException(animal.getPosition() + " is already occupied");
         }
 
         mapElements.put(animal.getPosition(), animal);
+        mapBoundary.addVector(animal.getPosition());
+
         animal.addObserver(this);
+        animal.addObserver(mapBoundary);
 
         return true;
     }
@@ -79,5 +88,13 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
     public String toString() {
         calculateBorders();
         return mapVisualizer.draw(lowerVisualizationBorder, upperVisualizationBorder);
+    }
+
+    public Vector2d getLowerVisualizationBorder() {
+        return lowerVisualizationBorder;
+    }
+
+    public Vector2d getUpperVisualizationBorder() {
+        return upperVisualizationBorder;
     }
 }

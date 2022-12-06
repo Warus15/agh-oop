@@ -1,11 +1,10 @@
 package agh.ics.oop;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 public class OptionsParser {
-    MoveDirection[] parse(String[] directions) {
-        MoveDirection[] result = new MoveDirection[directions.length];
+    public MoveDirection[] parse(String[] directions) throws IllegalArgumentException{
+        MoveDirection[] result;
 
         result = Arrays.stream(directions).map(dir ->
                         switch (dir) {
@@ -13,10 +12,9 @@ public class OptionsParser {
                             case "b", "backward" -> MoveDirection.BACKWARD;
                             case "r", "right" -> MoveDirection.RIGHT;
                             case "l", "left" -> MoveDirection.LEFT;
-                            default -> null;
+                            default -> throw new IllegalArgumentException(dir + " is not legal move");
                         }
-                ).filter(Objects::nonNull)
-                .toArray(MoveDirection[]::new);
+                ).toArray(MoveDirection[]::new);
 
         return result;
     }

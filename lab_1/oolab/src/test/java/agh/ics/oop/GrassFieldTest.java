@@ -30,14 +30,10 @@ class GrassFieldTest {
     void beforeEach() {
         map = new GrassField(10);
 
-        animals = new ArrayList<>();
-
         for (Vector2d v : animalsPositions) {
             Animal animal = new Animal(map, v);
             map.mapElements.put(v, animal);
         }
-
-        grass = new ArrayList<>();
 
         for (Vector2d v : grassPositions) {
             Grass g = new Grass(v);

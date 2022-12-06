@@ -37,7 +37,7 @@ public class GrassField extends AbstractWorldMap {
         do {
             x = getRandomNumber(0, GRASS_LIMIT);
             y = getRandomNumber(0, GRASS_LIMIT);
-        } while (!canPlaceGrass(new Vector2d(x, y)) || ( toExclude != null && new Vector2d(x, y).equals(toExclude)));
+        } while (!canPlaceGrass(new Vector2d(x, y)) || (toExclude != null && new Vector2d(x, y).equals(toExclude)));
 
         return new Vector2d(x, y);
     }
@@ -49,7 +49,8 @@ public class GrassField extends AbstractWorldMap {
             return false;
         }
 
-        this.mapElements.put(grassPosition, new Grass(grassPosition));
+        mapElements.put(grassPosition, new Grass(grassPosition));
+        mapBoundary.addVector(grassPosition);
 
         return true;
     }
@@ -57,43 +58,38 @@ public class GrassField extends AbstractWorldMap {
     /**
      * Function used in tests to place grass at given position
      * This one assumes that the place is not occupied
-     * @param position
-     *              Position at which grass should be placed
+     *
+     * @param position Position at which grass should be placed
      */
-    public void placeGrass(Vector2d position){
+    public void placeGrass(Vector2d position) {
         this.mapElements.put(position, new Grass(position));
 
     }
 
     @Override
     protected void calculateBorders() {
-        lowerVisualizationBorder = new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        upperVisualizationBorder = new Vector2d(0,0);
-
-        for(IMapElement mapElement : mapElements.values()){
-            Vector2d currentPosition = mapElement.getPosition();
-
-            lowerVisualizationBorder = currentPosition.lowerLeft(lowerVisualizationBorder);
-            upperVisualizationBorder = currentPosition.upperRight(upperVisualizationBorder);
-        }
+        lowerVisualizationBorder = mapBoundary.lowerLeft();
+        upperVisualizationBorder = mapBoundary.upperRight();
     }
 
     @Override
-    public boolean place(Animal animal) {
-        boolean wasPlaced = super.place(animal);
+    public boolean place(Animal animal) throws IllegalArgumentException {
+        try {
+            super.place(animal);
+        } catch (IllegalArgumentException ex) {
+            Object o = objectAt(animal.getPosition());
 
-        if(wasPlaced){
-            return true;
+            if (o instanceof Animal) {
+                throw new IllegalArgumentException((animal.getPosition() + " is already occupied by animal"));
+            }
+
+            mapElements.put(animal.getPosition(), animal);
+            animal.addObserver(this);
+            animal.addObserver(mapBoundary);
+
+            mapBoundary.addVector(animal.getPosition());
+            placeRandomGrass(animal.getPosition());
         }
-
-        Object o = objectAt(animal.getPosition());
-
-        if(o instanceof Animal){
-            return false;
-        }
-
-        mapElements.put(animal.getPosition(), animal);
-        placeRandomGrass(animal.getPosition());
 
         return true;
     }
@@ -102,7 +98,7 @@ public class GrassField extends AbstractWorldMap {
     public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
         boolean wasPositionChanged = super.positionChanged(oldPosition, newPosition);
 
-        if(wasPositionChanged){
+        if (wasPositionChanged) {
             return true;
         }
 

@@ -32,8 +32,15 @@ public class Animal extends AbstractWorldMapElement {
         switch (direction) {
             case RIGHT -> orientation = orientation.next();
             case LEFT -> orientation = orientation.previous();
-            case FORWARD, BACKWARD -> {
+            case FORWARD -> {
                 Vector2d tmp = new Vector2d(position.x, position.y).add(orientation.toUnitVector());
+                if (map.canMoveTo(tmp)) {
+                    this.positionChanged(position, tmp);
+                    position = tmp;
+                }
+            }
+            case BACKWARD -> {
+                Vector2d tmp = new Vector2d(position.x, position.y).subtract(orientation.toUnitVector());
                 if (map.canMoveTo(tmp)) {
                     this.positionChanged(position, tmp);
                     position = tmp;
