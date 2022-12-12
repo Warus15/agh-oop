@@ -9,4 +9,9 @@ public class AbstractWorldMapElement implements IMapElement {
     public Vector2d getPosition() {
         return position;
     }
+
+    @Override
+    public String getTextureName() {
+        return null;
+    }
 }

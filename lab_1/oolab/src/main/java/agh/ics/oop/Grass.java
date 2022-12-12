@@ -6,6 +6,11 @@ public class Grass extends AbstractWorldMapElement {
     }
 
     @Override
+    public String getTextureName() {
+        return "grass.jpg";
+    }
+
+    @Override
     public String toString() {
         return "*";
     }

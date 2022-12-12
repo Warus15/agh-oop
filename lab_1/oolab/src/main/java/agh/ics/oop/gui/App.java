@@ -2,47 +2,65 @@ package agh.ics.oop.gui;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class App extends Application {
+public class App extends Application implements IPositionChangeObserver {
 
-    private final int CELL_SIZE = 35;
+    private final int CELL_SIZE = 50;
     private final int SCALE_FACTOR = 1;
     private GrassField map;
 
+    private Stage stage;
+    private Scene scene;
+    private final GridPane grid = new GridPane();
+
+    private Thread engineThread;
+
+    private final int MOVE_DELAY = 300;
+
     @Override
     public void init() throws Exception {
-        super.init();
+        try {
+            super.init();
 
-        final Vector2d[] INITIAL_POSITIONS = {
-                new Vector2d(2, 2), new Vector2d(3, 4)
-        };
+            final Vector2d[] INITIAL_POSITIONS = {
+                    new Vector2d(2, 2), new Vector2d(3, 4)
+            };
 
-//        MoveDirection[] directions = new OptionsParser().parse(new String[]{"f"});
-        MoveDirection[] directions = new OptionsParser().parse(new String[]{"f", "f", "r", "f", "f", "l", "f", "f"});
-        map = new GrassField(5);
+            map = new GrassField(5);
 
-        IEngine engine = new SimulationEngine(directions, map, INITIAL_POSITIONS);
-        engine.run();
+            MoveDirection[] directions = new OptionsParser().parse(getParameters().getRaw().toArray(new String[0]));
+
+            SimulationEngine engine = new SimulationEngine(directions, map, INITIAL_POSITIONS, this, MOVE_DELAY);
+
+            engineThread = new Thread(engine);
+
+        } catch (IllegalArgumentException ex) {
+            System.out.println("Exit with exception: " + ex);
+            Platform.exit();
+            System.exit(0);
+        }
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Label label = new Label("Zwierzak");
-        Scene scene = new Scene(label, 400, 400);
+        stage = primaryStage;
 
-        primaryStage.setScene(getScene());
-        primaryStage.show();
+        engineThread.start();
+        stage.setScene(getScene());
+        stage.show();
     }
 
     public Scene getScene() {
-        GridPane grid = new GridPane();
+        grid.getChildren().clear();
         grid.setGridLinesVisible(true);
 
         //Calculating borders
@@ -83,15 +101,31 @@ public class App extends Application {
         for (int y = upperRight.y, i = 1; y >= lowerLeft.y; --y, ++i) {
             for (int x = lowerLeft.x, j = 1; x <= upperRight.x; ++x, ++j) {
                 Object o = map.objectAt(new Vector2d(x, y));
-                Label elementLabel = new Label(o != null ? o.toString() : " ");
 
-                GridPane.setHalignment(elementLabel, HPos.CENTER);
-                grid.add(elementLabel, j, i);
+                if (o == null) {
+                    continue;
+                }
+
+                VBox element = new GUIElementBox((IMapElement) o).getElement();
+
+                GridPane.setHalignment(element, HPos.CENTER);
+                grid.add(element, j, i);
             }
         }
 
         return new Scene(grid,
                 (width + 1) * CELL_SIZE * SCALE_FACTOR,
                 (height + 1) * CELL_SIZE * SCALE_FACTOR);
+    }
+
+    @Override
+    public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
+        Platform.runLater(()->{
+            stage.setScene(null);
+            stage.setScene(getScene());
+            stage.show();
+        });
+
+        return true;
     }
 }

@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SimulationEngine implements IEngine {
+public class SimulationEngine implements IEngine, Runnable {
 
     private final MoveDirection[] moves;
     private final IWorldMap map;
@@ -12,10 +12,29 @@ public class SimulationEngine implements IEngine {
 
     private final Vector2d[] positions;
 
+    private final IPositionChangeObserver GUIObserver;
+
+    private final int MOVE_DELAY;
+
     public SimulationEngine(MoveDirection[] moves, IWorldMap map, Vector2d[] initialPositions) {
         this.moves = moves;
         this.map = map;
         this.positions = initialPositions;
+        GUIObserver = null;
+        MOVE_DELAY = 300;
+
+        for (Vector2d v : initialPositions) {
+            Animal animal = new Animal(map, v);
+            placeAnimal(animal);
+        }
+    }
+
+    public SimulationEngine(MoveDirection[] moves, IWorldMap map, Vector2d[] initialPositions, IPositionChangeObserver observer, int delay) {
+        this.moves = moves;
+        this.map = map;
+        this.positions = initialPositions;
+        GUIObserver = observer;
+        MOVE_DELAY = delay;
 
         for (Vector2d v : initialPositions) {
             Animal animal = new Animal(map, v);
@@ -36,10 +55,10 @@ public class SimulationEngine implements IEngine {
 
         for (int i = 0; i < n; ++i) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(MOVE_DELAY);
                 animals.get(positions[i % m]).move(moves[i]);
+                GUIObserver.positionChanged(null, null);
 
-                //Todo: Change z-index with animal and grass
                 System.out.println(map);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

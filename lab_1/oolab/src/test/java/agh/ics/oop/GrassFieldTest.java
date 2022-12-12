@@ -59,7 +59,11 @@ class GrassFieldTest {
 
     @Test
     void place() {
-        assertFalse(map.place(new Animal(MapDirection.NORTH, new Vector2d(2, 2)))); // Field already contains animal
+        try{
+            assertFalse(map.place(new Animal(MapDirection.NORTH, new Vector2d(2, 2)))); // Field already contains animal
+        }catch(IllegalArgumentException ex) {
+            assertEquals(ex.getMessage(), "(2,2) is already occupied by animal");
+        }
         assertTrue(map.place(new Animal(MapDirection.NORTH, new Vector2d(10, 10)))); // Empty field
         assertTrue(map.place(new Animal(MapDirection.NORTH, new Vector2d(4, 4)))); // Field with grass
     }
