@@ -5,11 +5,10 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class App extends Application implements IPositionChangeObserver {
@@ -23,8 +22,9 @@ public class App extends Application implements IPositionChangeObserver {
     private final GridPane grid = new GridPane();
 
     private Thread engineThread;
+    private SimulationEngine engine;
 
-    private final int MOVE_DELAY = 300;
+    private final int MOVE_DELAY = 1000;
 
     @Override
     public void init() throws Exception {
@@ -37,9 +37,9 @@ public class App extends Application implements IPositionChangeObserver {
 
             map = new GrassField(5);
 
-            MoveDirection[] directions = new OptionsParser().parse(getParameters().getRaw().toArray(new String[0]));
+            engine = new SimulationEngine( map, INITIAL_POSITIONS, this, MOVE_DELAY);
 
-            SimulationEngine engine = new SimulationEngine(directions, map, INITIAL_POSITIONS, this, MOVE_DELAY);
+            setGrid();
 
             engineThread = new Thread(engine);
 
@@ -52,20 +52,53 @@ public class App extends Application implements IPositionChangeObserver {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        stage = primaryStage;
+        final Vector2d[] INITIAL_POSITIONS = {
+                new Vector2d(2, 2), new Vector2d(3, 4)
+        };
 
-        engineThread.start();
-        stage.setScene(getScene());
+        TextField directionsTextField = new TextField();
+
+        Button startButton = new Button("Start");
+        startButton.setOnAction((e) -> {
+            try{
+                MoveDirection[] directions = new OptionsParser().parse(directionsTextField.getText().split(" "));
+                engine.setMoves(directions);
+                engineThread.start();
+            } catch(IllegalArgumentException ex){
+                System.out.println("ex: " + ex);
+                Platform.exit();
+                System.exit(0);
+            }
+        });
+
+        HBox controls = new HBox();
+        controls.getChildren().addAll(startButton, directionsTextField);
+
+        VBox container = new VBox();
+
+        container.getChildren().addAll(grid, controls);
+
+        stage = primaryStage;
+        scene = new Scene(container, 1024, 720);
+        stage.setScene(scene);
         stage.show();
     }
 
-    public Scene getScene() {
+    public void setGrid() {
+        grid.setGridLinesVisible(false);
+        grid.getRowConstraints().clear();
+        grid.getColumnConstraints().clear();
         grid.getChildren().clear();
+
+
         grid.setGridLinesVisible(true);
 
         //Calculating borders
         Vector2d lowerLeft = map.getLowerVisualizationBorder();
         Vector2d upperRight = map.getUpperVisualizationBorder();
+
+        System.out.println(lowerLeft);
+        System.out.println(upperRight);
 
         int width = upperRight.x - lowerLeft.x + 1;
         int height = upperRight.y - lowerLeft.y + 1;
@@ -112,19 +145,13 @@ public class App extends Application implements IPositionChangeObserver {
                 grid.add(element, j, i);
             }
         }
-
-        return new Scene(grid,
-                (width + 1) * CELL_SIZE * SCALE_FACTOR,
-                (height + 1) * CELL_SIZE * SCALE_FACTOR);
     }
 
     @Override
     public boolean positionChanged(Vector2d oldPosition, Vector2d newPosition) {
-        Platform.runLater(()->{
-            stage.setScene(null);
-            stage.setScene(getScene());
-            stage.show();
-        });
+        long start = System.nanoTime();
+        setGrid();
+        System.out.println(System.nanoTime() - start);
 
         return true;
     }

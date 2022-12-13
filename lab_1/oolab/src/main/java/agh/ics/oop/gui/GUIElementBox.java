@@ -21,8 +21,16 @@ public class GUIElementBox {
     private final VBox vBox;
 
     public GUIElementBox(IMapElement mapElement) {
-        image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(mapElement.getTextureName())));
-        System.out.println(mapElement.getTextureName());
+//        image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(mapElement.getTextureName())));
+        image = switch (mapElement.getTextureName()){
+            case "up.png" -> ImageLoader.UP;
+            case "down.png" -> ImageLoader.DOWN;
+            case "left.png" -> ImageLoader.LEFT;
+            case "right.png" -> ImageLoader.RIGHT;
+            case "grass.jpg" -> ImageLoader.GRASS;
+            default -> null;
+        };
+
         imageView = new ImageView(image);
         imageView.setFitWidth(IMAGE_SIZE);
         imageView.setFitHeight(IMAGE_SIZE);

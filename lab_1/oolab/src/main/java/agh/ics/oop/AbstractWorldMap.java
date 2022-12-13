@@ -12,8 +12,8 @@ public abstract class AbstractWorldMap implements IWorldMap, IPositionChangeObse
 
     protected final MapBoundary mapBoundary;
 
-    protected Vector2d lowerVisualizationBorder;
-    protected Vector2d upperVisualizationBorder;
+    protected Vector2d lowerVisualizationBorder = new Vector2d(0,0);
+    protected Vector2d upperVisualizationBorder = new Vector2d(10,10);
 
     protected final MapVisualizer mapVisualizer = new MapVisualizer(this);
 

@@ -65,12 +65,11 @@ public class Animal extends AbstractWorldMapElement {
 
     @Override
     public String getTextureName() {
-        System.out.println(orientation);
         return switch(orientation){
-            case NORTH -> "up_a.png";
-            case EAST -> "right_a.png";
-            case SOUTH -> "down_a.png";
-            case WEST -> "left_a.png";
+            case NORTH -> "up.png";
+            case EAST -> "right.png";
+            case SOUTH -> "down.png";
+            case WEST -> "left.png";
         };
     }
 
